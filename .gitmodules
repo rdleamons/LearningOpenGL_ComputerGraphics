@@ -1,0 +1,18 @@
+[submodule "external/glfw"]
+	path = external/glfw
+	url = https://github.com/glfw/glfw
+[submodule "external/glm"]
+	path = external/glm
+	url = git@github.com:g-truc/glm.git
+[submodule "external/stb/stb"]
+	path = external/stb/stb
+	url = git@github.com:nothings/stb.git
+[submodule "external/SDL"]
+	path = external/SDL
+	url = git@github.com:libsdl-org/SDL.git
+[submodule "external/glad"]
+	path = external/glad
+	url = git@github.com:Dav1dde/glad.git
+[submodule "external/GL"]
+	path = external/GL
+	url = https://github.com/Perlmint/glew-cmake

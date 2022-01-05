@@ -1,10 +1,33 @@
 # learnopengl-template
 
+git clone --recursive git@github.com:EricWRogers/learnopengl-template.git
+
+
 ## DEPENDENCES
 
- - CMake minimum version 3.5
+- LINUX
 
- - Python version 3
+    -   CMake minimum version 3.18
+
+    -   Python version 3
+
+    -   libgl1-mesa-dev
+
+    -   librandr-dev
+
+    -   libxinerama-dev
+
+    -   libcursor-dev
+
+    -   libxi-dev
+
+    -   gdb
+
+- WINDOWS
+
+    -  CMake minimum version 3.18
+
+    -  Python version 3
 
 ## PROJECT GOALS
 

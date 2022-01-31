@@ -31,6 +31,9 @@ git clone --recursive git@github.com:EricWRogers/learnopengl-template.git
 
     -  Python version 3
 
+    -  Troubleshoot for msvcp140.dll or vcruntime140.dll is missing error
+    -   -   https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170
+
 ## PROJECT GOALS
 
  - starter project for students learning opengl

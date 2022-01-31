@@ -1,5 +1,7 @@
 # learnopengl-template
 
+git clone --recursive https://github.com/EricWRogers/learnopengl-template.git
+-or-
 git clone --recursive git@github.com:EricWRogers/learnopengl-template.git
 
 

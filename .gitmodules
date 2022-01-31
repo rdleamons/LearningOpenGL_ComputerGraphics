@@ -3,16 +3,16 @@
 	url = https://github.com/glfw/glfw
 [submodule "external/glm"]
 	path = external/glm
-	url = git@github.com:g-truc/glm.git
+	url = https://github.com/g-truc/glm
 [submodule "external/stb/stb"]
 	path = external/stb/stb
-	url = git@github.com:nothings/stb.git
+	url = https://github.com/nothings/stb
 [submodule "external/SDL"]
 	path = external/SDL
-	url = git@github.com:libsdl-org/SDL.git
+	url = https://github.com/libsdl-org/SDL
 [submodule "external/glad"]
 	path = external/glad
-	url = git@github.com:Dav1dde/glad.git
+	url = https://github.com/Dav1dde/glad
 [submodule "external/GL"]
 	path = external/GL
 	url = https://github.com/Perlmint/glew-cmake

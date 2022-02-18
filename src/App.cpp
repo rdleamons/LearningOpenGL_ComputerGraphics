@@ -15,6 +15,7 @@ void App::Run(){
 
   unsigned int windowFlags = 0;
 
+  // Toggles full screen or borderless
   //windowFlags |= Engine::WindowFlags::FULLSCREEN;
 
   //windowFlags |= Engine::WindowFlags::BORDERLESS;
@@ -28,7 +29,78 @@ void App::Run(){
   Loop();
 }
 
-void App::Load(){}
+void App::Load()
+{
+  // Build and compile our shader program
+  // Vertex shader:
+  unsigned int vertexShader;
+  vertexShader = glCreateShader(GL_VERTEX_SHADER); // Claim a shader spot on the GPU
+  glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+  glCompileShader(vertexShader);
+
+  // Check for shader compilation errors
+  int success;
+  char infoLog[512];
+  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+  if(!success)
+  {
+    glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl; // Change later
+  }
+
+  // Fragment Shader
+  unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+  glCompileShader(fragmentShader);
+
+  // Check for shader compilation errors
+  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+  if(!success)
+  {
+    glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+  }
+
+  // Link shaders
+  shaderProgram = glCreateProgram();
+  glAttachShader(shaderProgram, vertexShader);
+  glAttachShader(shaderProgram, fragmentShader);
+  glLinkProgram(shaderProgram);
+
+  // Check for linking errors
+  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+  if(!success)
+  {
+    glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+    std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+  }
+
+  glDeleteShader(vertexShader);
+  glDeleteShader(fragmentShader);
+
+  float vertices[] = {
+    -0.5f, -0.5f, 0.0f, // Left vertex
+     0.5f, -0.5f, 0.0f, // Right vertex
+     0.0f, 0.5f, 0.0f   // Top vertex
+  };
+
+  // VBO, VAO, 
+  glGenVertexArrays(1, &VAO);
+  glGenBuffers(1, &VBO);
+  //
+
+  glBindVertexArray(VAO);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0); // Unbinding the array
+}
+
 void App::Loop()
 {
   while(appState == AppState::ON)
@@ -43,7 +115,18 @@ void App::Loop()
   }
 }
 void App::Update(){}
-void App::Draw(){}
+void App::Draw()
+{
+  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  // Draw the first triangle
+  glUseProgram(shaderProgram);
+  glBindVertexArray(VAO);
+  glDrawArrays(GL_TRIANGLES, 0, 3);
+  glBindVertexArray(0); // Unbinding the array
+
+}
 void App::LateUpdate(){}
 void App::FixedUpdate(float _delta_time){}
 void App::InputUpdate()

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <SDL.h>
+#include <math.h>
 
 #include "Engine/Engine.hpp"
 #include "Engine/Debug.hpp"
@@ -35,6 +36,7 @@ private:
 	// Later, move outside of App class
 	unsigned int shaderProgram;
 	unsigned int VBO, VAO; // Vertex buffer & attributes
+
 	const char *vertexShaderSource = "#version 330 core\n" // What version of OpenGL do we want to be compatible with?
     "layout (location = 0) in vec3 aPos;\n"
     "void main()\n"
@@ -45,8 +47,9 @@ private:
 	// Runs for however many pixels in the screen are being drawn in, and is called once per frame. 
     const char *fragmentShaderSource = "#version 330 core\n"
     "out vec4 FragColor;\n"
+	"uniform vec4 ourColor;\n"
     "void main()\n"
     "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "   FragColor = ourColor;\n"
     "}\0";
 };

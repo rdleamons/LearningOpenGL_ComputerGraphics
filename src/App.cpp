@@ -1,27 +1,29 @@
 #include "App.hpp"
 
-App::App(){
+App::App()
+{
   Engine::Log("Object Made");
 }
-App::~App(){
+App::~App()
+{
   Engine::Log("Object Destroyed");
 }
 
-void App::Run(){
+void App::Run()
+{
   if (appState == AppState::ON)
     Engine::FatalError("App already running.");
-  
+
   Engine::Init();
 
   unsigned int windowFlags = 0;
 
-  // Toggles full screen or borderless
-  //windowFlags |= Engine::WindowFlags::FULLSCREEN;
+  // windowFlags |= Engine::WindowFlags::FULLSCREEN;
 
-  //windowFlags |= Engine::WindowFlags::BORDERLESS;
+  // windowFlags |= Engine::WindowFlags::BORDERLESS;
 
   window.Create("Engine", 800, 600, windowFlags);
-  
+
   Load();
 
   appState = AppState::ON;
@@ -31,79 +33,82 @@ void App::Run(){
 
 void App::Load()
 {
-  // Build and compile our shader program
-  // Vertex shader:
-  unsigned int vertexShader;
-  vertexShader = glCreateShader(GL_VERTEX_SHADER); // Claim a shader spot on the GPU
-  glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-  glCompileShader(vertexShader);
+  // build and compile our shader program
+  // ------------------------------------
+  shader.Compile("assets/shaders/4.2.texture.vs","assets/shaders/4.2.texture.fs");
+  shader.AddAttribute("ourColor");
+  shader.AddAttribute("aTexCoord");
+  shader.Link();
+  
 
-  // Check for shader compilation errors
-  int success;
-  char infoLog[512];
-  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-  if(!success)
-  {
-    glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl; // Change later
-  }
-
-  // Fragment Shader
-  unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-  glCompileShader(fragmentShader);
-
-  // Check for shader compilation errors
-  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-  if(!success)
-  {
-    glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-  }
-
-  // Link shaders
-  shaderProgram = glCreateProgram();
-  glAttachShader(shaderProgram, vertexShader);
-  glAttachShader(shaderProgram, fragmentShader);
-  glLinkProgram(shaderProgram);
-
-  // Check for linking errors
-  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-  if(!success)
-  {
-    glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-    std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-  }
-
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragmentShader);
-
+  // set up vertex data (and buffer(s)) and configure vertex attributes
+  // ------------------------------------------------------------------
   float vertices[] = {
-    -0.5f, -0.5f, 0.0f, // Left vertex
-     0.5f, -0.5f, 0.0f, // Right vertex
-     0.0f, 0.5f, 0.0f   // Top vertex
+      // positions        // color           //Texture
+      0.5f, 0.5f, 0.0f,   1.0f, 1.0f, 1.0f,  1.0f, 1.0f, // left
+      0.5f, -0.5f, 0.0f,  1.0f, 1.0f, 1.0f,  1.0f, 0.0f, // right
+      -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f, // top
+      -0.5f, 0.5f, 0.0f,  1.0f, 1.0f, 1.0f,  0.0f, 1.0f // left mid
+
+      
   };
 
-  // VBO, VAO, 
+  unsigned int indices[]
+  {
+    0, 1, 3, 
+    1, 2, 3, 
+  };
+
+  // unsigned int VBO, VAO;
   glGenVertexArrays(1, &VAO);
   glGenBuffers(1, &VBO);
-  //
-
+  glGenBuffers(1, &EBO);
+  // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
   glBindVertexArray(VAO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+  // position
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(0);
 
+  // color
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
+
+  // texture coordinates
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
+  glEnableVertexAttribArray(2);
+
+  // Load texture 1
+  texture1 = Engine::LoadPNGToGLTexture("assets/textures/container.png", GL_RGBA, GL_RGBA);
+
+  // Load texture 2
+  texture2 = Engine::LoadPNGToGLTexture("assets/textures/awesomeface.png", GL_RGBA, GL_RGBA);
+
+  // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
   glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindVertexArray(0); // Unbinding the array
+
+  // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
+  // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
+  glBindVertexArray(0);
+
+  glUniform1i(glGetUniformLocation(shader.GetProgramID(), "texture1"), 0);
+  glUniform1i(glGetUniformLocation(shader.GetProgramID(), "texture2"), 1);
+  
+  // wireframe
+  //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+  // fill
+  glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void App::Loop()
 {
-  while(appState == AppState::ON)
+  while (appState == AppState::ON)
   {
     Update();
     Draw();
@@ -114,38 +119,38 @@ void App::Loop()
     InputUpdate();
   }
 }
-
-void App::Update(){}
-
+void App::Update() {}
 void App::Draw()
 {
-  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  // Be sure to activatethe shader program before calling any uniforms
-  glUseProgram(shaderProgram);
+  // bind textures on corresponding texture units
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture1.id);
 
-  // Update shader uniform 
-  double timeVal = SDL_GetTicks() / 1000;
-  float greenVal = static_cast<float>(sin(timeVal) / 2.0 + 0.5f);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, texture2.id);
 
-  // Get uniform location
-  int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-  
-  // Set the uniform
-  glUniform4f(vertexColorLocation, 0.0f, greenVal, 0.0f, 1.0f);
+  // be sure to activate the shader before any calls to glUniform
+  shader.Use();
 
-  // Render triangle
+  // update shader uniform
+  //double  timeValue = SDL_GetTicks() / 1000;
+  //float greenValue = static_cast<float>(sin(timeValue) / 2.0 + 0.5);
+  //int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+  //glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+
+  // render the triangle
   glBindVertexArray(VAO);
-  glDrawArrays(GL_TRIANGLES, 0, 3);
-  glBindVertexArray(0); // Unbinding the array
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  //glDrawArrays(GL_LINE_LOOP, 0, 4);
+  glBindVertexArray(0);
 
+  shader.UnUse();
 }
 
-void App::LateUpdate(){}
-
-void App::FixedUpdate(float _delta_time){}
-
+void App::LateUpdate() {}
+void App::FixedUpdate(float _delta_time) {}
 void App::InputUpdate()
 {
   SDL_Event event;

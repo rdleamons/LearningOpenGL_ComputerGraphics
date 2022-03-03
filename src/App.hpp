@@ -5,51 +5,62 @@
 #include "Engine/Engine.hpp"
 #include "Engine/Debug.hpp"
 #include "Engine/Window.hpp"
+#include "Engine/Shader.hpp"
+#include "Engine/IOManager.hpp"
+#include "Engine/Data/GLTexture.hpp"
 
 enum AppState
 {
-	ON,
-	OFF
+    ON,
+    OFF
 };
 
 class App
 {
 public:
-	App();
-	~App();
+    App();
+    ~App();
 
-	void Run();
+    void Run();
 
 private:
-	void Load();
-	void Loop();
-	void Update();
-	void Draw();
-	void LateUpdate();
-	void FixedUpdate(float _delta_time);
-	void InputUpdate();
+    void Load();
+    void Loop();
+    void Update();
+    void Draw();
+    void LateUpdate();
+    void FixedUpdate(float _delta_time);
+    void InputUpdate();
 
-	AppState appState = AppState::OFF;
+    AppState appState = AppState::OFF;
 
-	Engine::Window window;
+    Engine::Window window;
 
-	// Later, move outside of App class
-	unsigned int shaderProgram;
-	unsigned int VBO, VAO; // Vertex buffer & attributes
+    Engine::Shader shader;
 
-	const char *vertexShaderSource = "#version 330 core\n" // What version of OpenGL do we want to be compatible with?
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
+    // move out to external class
+    unsigned int vertexShader;
+    unsigned int shaderProgram;
+    unsigned int VBO, VAO, EBO;
 
-	// Runs for however many pixels in the screen are being drawn in, and is called once per frame. 
+    Engine::GLTexture texture1 = {};
+    Engine::GLTexture texture2 = {};
+
+    const char *vertexShaderSource = "#version 330 core\n"
+                                     "layout (location = 0) in vec3 aPos;\n"
+                                     "layout (location = 1) in vec3 aColor;\n"
+                                     "out vec3 ourColor;\n"
+                                     "void main()\n"
+                                     "{\n"
+                                     "   gl_Position = vec4(aPos, 1.0);\n"
+                                     "   ourColor = aColor;\n"
+                                     "}\0";
+
     const char *fragmentShaderSource = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-	"uniform vec4 ourColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = ourColor;\n"
-    "}\0";
+                                       "out vec4 FragColor;\n"
+                                       "in vec3 ourColor;\n"
+                                       "void main()\n"
+                                       "{\n"
+                                       "   FragColor = vec4(ourColor, 1.0);\n"
+                                       "}\n\0";
 };

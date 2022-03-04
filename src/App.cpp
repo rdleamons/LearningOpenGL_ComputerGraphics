@@ -36,21 +36,20 @@ void App::Load()
   // build and compile our shader program
   // ------------------------------------
   shader.Compile("assets/shaders/4.2.texture.vs","assets/shaders/4.2.texture.fs");
-  shader.AddAttribute("ourColor");
+  shader.AddAttribute("aColor");
   shader.AddAttribute("aTexCoord");
   shader.Link();
   
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
-  float vertices[] = {
-      // positions        // color           //Texture
-      0.5f, 0.5f, 0.0f,   1.0f, 1.0f, 1.0f,  1.0f, 1.0f, // left
-      0.5f, -0.5f, 0.0f,  1.0f, 1.0f, 1.0f,  1.0f, 0.0f, // right
-      -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f, // top
-      -0.5f, 0.5f, 0.0f,  1.0f, 1.0f, 1.0f,  0.0f, 1.0f // left mid
-
-      
+  float vertices[] = 
+  {
+    // positions        // color           //Texture
+    0.5f, 0.5f, 0.0f,   1.0f, 1.0f, 1.0f,  1.0f, 1.0f, // left
+    0.5f, -0.5f, 0.0f,  1.0f, 1.0f, 1.0f,  1.0f, 0.0f, // right
+    -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f, // top
+    -0.5f, 0.5f, 0.0f,  1.0f, 1.0f, 1.0f,  0.0f, 1.0f // left mid
   };
 
   unsigned int indices[]
@@ -96,9 +95,6 @@ void App::Load()
   // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
   // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
   glBindVertexArray(0);
-
-  glUniform1i(glGetUniformLocation(shader.GetProgramID(), "texture1"), 0);
-  glUniform1i(glGetUniformLocation(shader.GetProgramID(), "texture2"), 1);
   
   // wireframe
   //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
@@ -133,6 +129,9 @@ void App::Draw()
 
   // be sure to activate the shader before any calls to glUniform
   shader.Use();
+
+  glUniform1i(glGetUniformLocation(shader.GetProgramID(), "texture1"), 0);
+  glUniform1i(glGetUniformLocation(shader.GetProgramID(), "texture2"), 1);
 
   // update shader uniform
   //double  timeValue = SDL_GetTicks() / 1000;

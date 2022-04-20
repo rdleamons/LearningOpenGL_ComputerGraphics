@@ -10,6 +10,9 @@ add_subdirectory(external/glfw)
 add_subdirectory(external/glm)
 add_subdirectory(external/SDL)
 add_subdirectory(external/stb)
+add_subdirectory(external/assimp)
+add_subdirectory(external/freetype2)
+include_directories("${PROJECT_SOURCE_DIR}/external/freetype2/include")
 
 file(GLOB_RECURSE SRC_SOURCES src/*.c*)
 file(GLOB_RECURSE SRC_HEADERS src/*.h*)
@@ -24,6 +27,7 @@ target_link_libraries(${PROJECT_NAME}
         stb
         libglew_static
         assimp
+        freetype
         SDL2main
         SDL2-static
 	glad
@@ -35,6 +39,7 @@ target_include_directories(${PROJECT_NAME}
         glm
         stb
         assimp
+        freetype
         SDL2main
         SDL2-static
 	glad

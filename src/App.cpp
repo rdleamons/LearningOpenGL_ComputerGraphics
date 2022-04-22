@@ -77,6 +77,7 @@ App::App()
 {
     Engine::Log("Object Made");
 }
+
 App::~App()
 {
     Engine::Log("Object Destroyed");
@@ -295,6 +296,7 @@ void App::Loop()
         InputUpdate();
     }
 }
+
 void App::Update()
 {
     if (inputManager.isKeyPressed(SDLK_w))
@@ -334,6 +336,7 @@ void App::Update()
         }
     }
 }
+
 void App::Draw()
 {
     glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
@@ -343,16 +346,37 @@ void App::Draw()
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)window.GetScreenWidth() / (float)window.GetScreenHeight(), 0.1f, 1000.0f);
     glm::mat4 view = camera.GetViewMatrix();
 
-
+    // Configure planet shader
     planetShader.Use();
     planetShader.SetMat4("projection", projection);
     planetShader.SetMat4("view", view);
     
-    
     // draw planet
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(8.0f));
+    planetShader.SetMat4("model", model);
+    planet.Draw(planetShader);
+    planetShader.UnUse();
 
-    // draw meteorites
+    // Configure asteroid shader
+    asteroidShader.Use();
+    asteroidShader.SetMat4("projection", projection);
+    asteroidShader.SetMat4("view", view);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, rock.textures_loaded[0].id);
+    asteroidShader.SetInt("texture_diffuse1", 0);
     
+    // Draw asteroids
+    for(int i = 0; i < rock.meshes.size(); i++)
+    {
+        glBindVertexArray(rock.meshes[i].VAO);
+        // glDrawArrayInstanced(); --> old command
+        glDrawElementsInstanced(GL_TRIANGLES, static_cast<unsigned int>(rock.meshes[i].indices.size()), 
+                                GL_UNSIGNED_INT, 0, amount);
+        glBindVertexArray(0);
+    }
+
     // draw delta time text
     textShader.Use();
     projection = glm::ortho(0.0f, static_cast<float>(window.GetScreenWidth()), 0.0f, static_cast<float>(window.GetScreenHeight()));
@@ -362,7 +386,9 @@ void App::Draw()
 }
 
 void App::LateUpdate() {}
+
 void App::FixedUpdate(float dt) {}
+
 void App::InputUpdate()
 {
     SDL_Event event;

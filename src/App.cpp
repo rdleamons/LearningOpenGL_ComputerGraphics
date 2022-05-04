@@ -1,8 +1,8 @@
 #include "App.hpp"
 
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
-    float cubeVertices[] = {
+// set up vertex data (and buffer(s)) and configure vertex attributes
+// ------------------------------------------------------------------
+float cubeVertices[] = {
         // positions          // texture Coords
         -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
          0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
@@ -46,7 +46,7 @@
         -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
-    float skyboxVertices[] = {
+float skyboxVertices[] = {
         // positions          
         -1.0f,  1.0f, -1.0f,
         -1.0f, -1.0f, -1.0f,
@@ -91,8 +91,8 @@
          1.0f, -1.0f,  1.0f
     };
 
-    // positions all containers
-    glm::vec3 cubePositions[] = {
+// positions all containers
+glm::vec3 cubePositions[] = {
         glm::vec3( 0.0f,  0.0f,  0.0f),
         glm::vec3( 2.0f,  5.0f, -15.0f),
         glm::vec3(-1.5f, -2.2f, -2.5f),
@@ -105,26 +105,35 @@
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
 
-    // positions of the point lights
-    glm::vec3 pointLightPositions[] = {
+// positions of the point lights
+glm::vec3 pointLightPositions[] = {
         glm::vec3( 0.7f,  0.2f,  2.0f),
         glm::vec3( 2.3f, -3.3f, -4.0f),
         glm::vec3(-4.0f,  2.0f, -12.0f),
         glm::vec3( 0.0f,  0.0f, -3.0f)
     };
 
-
 // lighting
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
+// Text color - RL
+glm::vec3 playTextColor = glm::vec3(0.75, 0.45f, 0.95f);
+glm::vec3 quitTextColor = glm::vec3(0.75, 0.45f, 0.95f);
+glm::vec3 titleTextColor = glm::vec3(0.75, 0.45f, 0.95f);
+
+// mouse positions - RL
+int mousex, mousey;
 
 App::App()
 {
     Engine::Log("Object Made");
 }
+
 App::~App()
 {
     Engine::Log("Object Destroyed");
 }
+
 void App::Run()
 {
     if (appState == AppState::ON)
@@ -139,11 +148,11 @@ void App::Run()
     // windowFlags |= Engine::WindowFlags::BORDERLESS;
 
 
-    window.Create("Engine", 800, 600, windowFlags);
+    window.Create("Ad Astra", 800, 600, windowFlags);
 
     // lock mouse
-    SDL_CaptureMouse(SDL_TRUE);
-    SDL_SetRelativeMouseMode(SDL_TRUE);
+    SDL_CaptureMouse(SDL_FALSE);
+    SDL_SetRelativeMouseMode(SDL_FALSE);
 
     Load();
 
@@ -151,6 +160,7 @@ void App::Run()
 
     Loop();
 }
+
 void App::Load()
 {
     // configure global opengl state
@@ -366,6 +376,7 @@ void App::Load()
     // start timer
     previousTime = high_resolution_clock::now();
 }
+
 void App::Loop()
 {
     while (appState == AppState::ON)
@@ -383,26 +394,28 @@ void App::Loop()
         InputUpdate();
     }
 }
+
 void App::Update()
 {
+    // Multiplied dt by 7.5 to increase camera speed
     if (inputManager.isKeyPressed(SDLK_w))
     {
-        camera.ProcessKeyboard(Engine::Camera_Movement::FORWARD, deltaTime);
+        camera.ProcessKeyboard(Engine::Camera_Movement::FORWARD, deltaTime * 7.5f);
     }
 
     if (inputManager.isKeyPressed(SDLK_s))
     {
-        camera.ProcessKeyboard(Engine::Camera_Movement::BACKWARD, deltaTime);
+        camera.ProcessKeyboard(Engine::Camera_Movement::BACKWARD, deltaTime * 7.5f);
     }
 
     if (inputManager.isKeyPressed(SDLK_a))
     {
-        camera.ProcessKeyboard(Engine::Camera_Movement::LEFT, deltaTime);
+        camera.ProcessKeyboard(Engine::Camera_Movement::LEFT, deltaTime * 7.5f);
     }
 
     if (inputManager.isKeyPressed(SDLK_d))
     {
-        camera.ProcessKeyboard(Engine::Camera_Movement::RIGHT, deltaTime);
+        camera.ProcessKeyboard(Engine::Camera_Movement::RIGHT, deltaTime * 7.5f);
     }
 
     // Toggle Mouse Lock
@@ -422,6 +435,7 @@ void App::Update()
         }
     }
 }
+
 void App::Draw()
 {
     glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
@@ -493,11 +507,18 @@ void App::Draw()
     textShader.Use();
     projection = glm::ortho(0.0f, static_cast<float>(window.GetScreenWidth()), 0.0f, static_cast<float>(window.GetScreenHeight()));
     glUniformMatrix4fv(glGetUniformLocation(textShader.GetProgramID(), "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-    RenderText(textShader, std::to_string(deltaTime), 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
+    
+    // Render text
+    RenderText(textShader, "Play", 25.0f, 25.0f, 1.5f, playTextColor);
+    RenderText(textShader, "Quit", 660.0f, 25.0f, 1.5f, quitTextColor);
+    RenderText(textShader, "Ad Astra", 212.0f, 450.0f, 2.5f, titleTextColor);
     textShader.UnUse();
 }
+
 void App::LateUpdate() {}
+
 void App::FixedUpdate(float dt) {}
+
 void App::InputUpdate()
 {
     SDL_Event event;
@@ -512,16 +533,44 @@ void App::InputUpdate()
             camera.ProcessMouseMovement(
                 event.motion.xrel,
                 -event.motion.yrel);
-            break;
         case SDL_KEYUP:
             inputManager.releasedKey(event.key.keysym.sym);
             break;
         case SDL_KEYDOWN:
             inputManager.pressKey(event.key.keysym.sym);
             break;
+        case SDL_MOUSEBUTTONDOWN: // Deal with mouse click input
+            // Get mouse position
+            SDL_GetMouseState(&mousex, &mousey); 
+
+            // If it was a left click
+            if(event.button.button == SDL_BUTTON_LEFT)
+            {
+                // If clicked in play button
+                if(25 <= mousex && mousex <= 150 && 510 <= mousey && mousey <= 585)
+                {
+                    Engine::Log("Play");
+                    playTextColor = glm::vec3(1.0f, 0.96f, 0.51f); // Change the color of the Play text
+                }
+                // If clicked in quit button
+                else if (660 <= mousex && mousex <= 770 && 510 <= mousey && mousey <= 585)
+                {
+                    Engine::Log("Quit");
+                    quitTextColor = glm::vec3(1.0f, 0.96f, 0.51f); // Change the color of the Quit text
+                    exit(EXIT_SUCCESS); // Close the program
+                }
+                // If clicked in title 
+                else if (210 <= mousex && mousex <= 580 && 40 <= mousey && mousey <= 150)
+                {
+                    Engine::Log("Ad Astra... To the Stars.");
+                    titleTextColor = glm::vec3(1.0f, 0.96f, 0.51f); // Change the color of the title text
+                }
+            }
+            break;
         }
     }
 }
+
 void App::RenderText(Engine::Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color)
 {
     // activate corresponding render state	
@@ -576,6 +625,7 @@ void App::RenderText(Engine::Shader &shader, std::string text, float x, float y,
 // +Z (front) 
 // -Z (back)
 // -------------------------------------------------------
+
 unsigned int App::loadCubemap(std::vector<std::string> faces)
 {
     unsigned int textureID;

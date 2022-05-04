@@ -84,7 +84,7 @@ private:
 
     float deltaTime;
 
-    bool mouseLock = true;
+    bool mouseLock = false; // Changed from true
 
     std::map<GLchar, Character> Characters;
 

@@ -21,7 +21,6 @@ namespace Engine
 
         int Create(std::string _windowName, int _screenWidth, int _screenHeight, unsigned int _currentFlags);
         void SetWindowName(std::string _windowName);
-
         void SwapBuffer();
 
         int GetScreenWidth() { return screenWidth; }
